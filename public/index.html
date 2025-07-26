@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WellNudge</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
+    input, button { padding: 0.5rem; margin-top: 0.5rem; width: 100%; }
+    .suggestion { margin-top: 1rem; background: #eef; padding: 1rem; border-radius: 5px; }
+    canvas { margin-top: 2rem; width: 100%; height: 300px; }
+  </style>
+</head>
+<body>
+  <h1>WellNudge</h1>
+  <p>How are you feeling today?</p>
+  <input id="entry" type="text" placeholder="Type your thoughts..." />
+  <button id="submit">Submit</button>
+  <div id="suggestion" class="suggestion" style="display: none;"></div>
+  <canvas id="moodChart"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    const moodWords = {
+      happy: 5, great: 5, good: 4, okay: 3, fine: 3,
+      meh: 2, sad: 1, terrible: 1
+    };
+
+    const suggestions = {
+      5: "Keep up the positive vibes! Try journaling again tomorrow!",
+      4: "You're doing well. Maybe do a creative activity today!",
+      3: "You're feeling neutral. How about a walk or music break?",
+      2: "A bit down? Try a short meditation or deep breathing.",
+      1: "Rough day? Call a friend or write more about how you feel."
+    };
+
+    let moodData = [{ label: 'Day 1', score: 3 }];
+
+    const ctx = document.getElementById('moodChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: moodData.map(d => d.label),
+        datasets: [{
+          label: 'Mood Score',
+          data: moodData.map(d => d.score),
+          borderColor: 'blue',
+          fill: false,
+        }]
+      },
+      options: { scales: { y: { min: 1, max: 5 } } }
+    });
+
+    document.getElementById('submit').addEventListener('click', () => {
+      const text = document.getElementById('entry').value.toLowerCase();
+      let score = 3;
+      for (const word in moodWords) {
+        if (text.includes(word)) {
+          score = moodWords[word];
+          break;
+        }
+      }
+
+      const day = 'Day ' + (moodData.length + 1);
+      moodData.push({ label: day, score });
+      chart.data.labels.push(day);
+      chart.data.datasets[0].data.push(score);
+      chart.update();
+
+      document.getElementById('suggestion').innerText = '✨ ' + suggestions[score];
+      document.getElementById('suggestion').style.display = 'block';
+      document.getElementById('entry').value = '';
+    });
+  </script>
+</body>
+</html>
